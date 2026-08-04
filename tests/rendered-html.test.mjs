@@ -20,16 +20,23 @@ test("uses the production domain and Chinese document metadata", async () => {
   assert.doesNotMatch(layout, /anatomy-atelier\.openai\.site/);
 });
 
-test("publishes crawler routes for the production site", async () => {
+test("publishes static crawler files for the production site", async () => {
   const [robots, sitemap] = await Promise.all([
-    readSource("app/robots.ts"),
-    readSource("app/sitemap.ts"),
+    readSource("public/robots.txt"),
+    readSource("public/sitemap.xml"),
   ]);
 
-  assert.match(robots, /userAgent:\s*"\*"/);
-  assert.match(robots, /allow:\s*"\/"/);
-  assert.match(robots, /sitemap:\s*`\$\{SITE_URL\}\/sitemap\.xml`/);
-  assert.match(sitemap, /url:\s*`\$\{SITE_URL\}\/`/);
+  assert.match(robots, /^User-agent: \*$/m);
+  assert.match(robots, /^Allow: \/$/m);
+  assert.match(robots, /^Sitemap: https:\/\/anatomy\.itea\.fit\/sitemap\.xml$/m);
+  assert.match(sitemap, /<loc>https:\/\/anatomy\.itea\.fit\/<\/loc>/);
+});
+
+test("builds before deploying the Worker", async () => {
+  const packageJson = JSON.parse(await readSource("package.json"));
+
+  assert.equal(packageJson.scripts.deploy, "npm run build && wrangler deploy");
+  assert.equal(packageJson.scripts["deploy:all"], "npm run deploy && npm run deploy:static");
 });
 
 test("keeps every referenced 3D model in public assets", async () => {
