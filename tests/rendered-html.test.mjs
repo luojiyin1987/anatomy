@@ -1,91 +1,58 @@
 import assert from "node:assert/strict";
-import { access, readFile, readdir } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
-const developmentPreviewMeta =
-  /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
-const templateRoot = new URL("../", import.meta.url);
-const previewRoot = new URL("../app/_sites-preview/", import.meta.url);
+const repositoryRoot = new URL("../", import.meta.url);
 
-async function render() {
-  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
-  const { default: worker } = await import(workerUrl.href);
-
-  return worker.fetch(
-    new Request("http://localhost/", {
-      headers: { accept: "text/html" },
-    }),
-    {
-      ASSETS: {
-        fetch: async () => new Response("Not found", { status: 404 }),
-      },
-    },
-    {
-      waitUntil() {},
-      passThroughOnException() {},
-    },
-  );
+function readSource(path) {
+  return readFile(new URL(path, repositoryRoot), "utf8");
 }
 
-test("server-renders the starter loading skeleton", async () => {
-  const response = await render();
-  assert.equal(response.status, 200);
-  assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+test("uses the production domain and Chinese document metadata", async () => {
+  const layout = await readSource("app/layout.tsx");
 
-  const html = await response.text();
-  assert.match(html, developmentPreviewMeta);
-  assert.match(html, /<title>Your site is taking shape<\/title>/i);
-  assert.match(html, /Building your site/);
-  assert.match(html, /Your site is taking shape/);
-  assert.match(
-    html,
-    /Your first version will appear here automatically when it’s ready\./,
-  );
-  assert.doesNotMatch(html, /Codex/);
-  assert.match(html, /react-loading-skeleton/);
-  assert.match(html, /role="status"/);
+  assert.match(layout, /const SITE_URL = "https:\/\/anatomy\.itea\.fit";/);
+  assert.match(layout, /metadataBase:\s*new URL\(SITE_URL\)/);
+  assert.match(layout, /canonical:\s*"\/"/);
+  assert.match(layout, /<html lang="zh-CN">/);
+  assert.match(layout, /"@type": "WebSite"/);
+  assert.match(layout, /"@type": "WebApplication"/);
+  assert.doesNotMatch(layout, /anatomy-atelier\.openai\.site/);
 });
 
-test("keeps the loading skeleton scoped and disposable", async () => {
-  const [preview, css, page, layout, packageJson, files] = await Promise.all([
-    readFile(new URL("SkeletonPreview.tsx", previewRoot), "utf8"),
-    readFile(new URL("preview.css", previewRoot), "utf8"),
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../package.json", import.meta.url), "utf8"),
-    readdir(previewRoot),
+test("publishes crawler routes for the production site", async () => {
+  const [robots, sitemap] = await Promise.all([
+    readSource("app/robots.ts"),
+    readSource("app/sitemap.ts"),
   ]);
 
-  assert.deepEqual(files.sort(), ["SkeletonPreview.tsx", "preview.css"]);
-  assert.match(preview, /from "react-loading-skeleton"/);
-  assert.match(preview, /baseColor="#eceae7"/);
-  assert.match(preview, /highlightColor="#f9f8f6"/);
-  assert.match(preview, /duration=\{2\.8\}/);
-  assert.match(preview, /sites-skeleton-search-placeholder/);
-  assert.match(packageJson, /"react-loading-skeleton": "3\.5\.0"/);
+  assert.match(robots, /userAgent:\s*"\*"/);
+  assert.match(robots, /allow:\s*"\/"/);
+  assert.match(robots, /sitemap:\s*`\$\{SITE_URL\}\/sitemap\.xml`/);
+  assert.match(sitemap, /url:\s*`\$\{SITE_URL\}\/`/);
+});
 
-  const shellIndex = preview.indexOf('className="sites-skeleton-shell"');
-  const statusIndex = preview.indexOf('className="sites-skeleton-status"');
-  assert.ok(shellIndex >= 0 && statusIndex > shellIndex);
-  assert.match(css, /position:\s*fixed/);
-  assert.match(css, /inset:\s*0/);
-  assert.match(css, /opacity:\s*0\.52/);
-  assert.match(css, /prefers-reduced-motion:\s*reduce/);
-  assert.doesNotMatch(css, /#020617|canvas|pets|progress/i);
-  assert.doesNotMatch(
-    preview,
-    /loading-spinner|status-mark|status-progress|canvas|cookie|random/i,
+test("keeps every referenced 3D model in public assets", async () => {
+  const anatomyData = await readSource("app/lib/anatomy-data.ts");
+  const modelPaths = [...anatomyData.matchAll(/model:\s*"([^"]+\.glb)"/g)].map(
+    (match) => match[1],
   );
 
-  assert.match(page, /export const metadata:\s*Metadata/);
-  assert.match(page, /"codex-preview": "development"/);
-  assert.match(page, /<SkeletonPreview \/>/);
-  assert.match(layout, /title:\s*"Starter Project"/);
-  assert.doesNotMatch(layout, /codex-preview|_sites-preview|themeColor|\bViewport\b/);
-  assert.doesNotMatch(css, /(^|\s)(html|body)\s*\{/m);
+  assert.ok(modelPaths.length >= 9, "expected the organ library to reference at least nine models");
+  assert.equal(new Set(modelPaths).size, modelPaths.length, "model paths must be unique");
 
-  await assert.rejects(
-    access(new URL("public/_sites-preview", templateRoot)),
+  await Promise.all(
+    modelPaths.map(async (modelPath) => {
+      assert.match(modelPath, /^\/models\//);
+      await access(new URL(`../public${modelPath}`, import.meta.url));
+    }),
   );
+});
+
+test("documents the real project instead of the starter template", async () => {
+  const readme = await readSource("README.md");
+
+  assert.match(readme, /^# Anatomy Atelier/m);
+  assert.match(readme, /https:\/\/anatomy\.itea\.fit\//);
+  assert.doesNotMatch(readme, /# vinext-starter|site-creator-vinext-starter/);
 });
