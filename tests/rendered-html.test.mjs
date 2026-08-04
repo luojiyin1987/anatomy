@@ -11,7 +11,10 @@ function readSource(path) {
 function readOrganIds(anatomyData) {
   const union = anatomyData.match(/export type OrganId\s*=\s*([\s\S]*?);/);
   assert.ok(union, "expected an OrganId union");
-  return [...union[1].matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+  const organIds = [...union[1].matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+
+  assert.ok(organIds.length > 0, "expected the OrganId union to contain string literals");
+  return organIds;
 }
 
 test("uses the production domain and Chinese document metadata", async () => {
