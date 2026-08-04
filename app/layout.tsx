@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import "./globals.css";
 
+const SITE_URL = "https://anatomy.itea.fit";
+
 const sans = DM_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
@@ -16,29 +18,30 @@ const OG_IMAGE = {
   url: "/og.jpg",
   width: 1200,
   height: 675,
-  alt: "An anatomical heart specimen floating above a plinth, beside the Anatomy Atelier wordmark",
+  alt: "Anatomy Atelier 人体解剖学习工具的心脏标本预览图",
 };
 
-/**
- * Absolute URLs for og:image and friends. Resolved per host so a preview
- * deployment does not advertise another origin's assets:
- *   1. NEXT_PUBLIC_SITE_URL — explicit override, wins everywhere
- *   2. VERCEL_PROJECT_PRODUCTION_URL — the project's stable production domain
- *   3. the original Cloudflare/OpenAI host
- */
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "https://anatomy-atelier.openai.site");
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: "Anatomy Atelier — Learn anatomy like an artist",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "人体解剖学习工具｜Anatomy Atelier",
+    template: "%s｜Anatomy Atelier",
+  },
   description:
-    "Explore medically detailed 3D organs — heart, brain, lungs, liver, kidneys, eye, intestine, pancreas, and skin — through an elegant, interactive anatomy atelier.",
+    "交互式人体解剖学习工具，通过 3D 模型探索心脏、大脑、肺、肝脏、肾脏等人体器官的结构、位置与功能。",
   applicationName: "Anatomy Atelier",
-  keywords: ["anatomy", "3D anatomy", "human body", "medical education", "interactive learning", "organs"],
+  keywords: [
+    "人体解剖",
+    "解剖学习",
+    "3D 解剖",
+    "人体器官",
+    "医学教育",
+    "anatomy",
+    "3D anatomy",
+  ],
+  alternates: {
+    canonical: "/",
+  },
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -50,15 +53,17 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
+    url: SITE_URL,
+    locale: "zh_CN",
     siteName: "Anatomy Atelier",
-    title: "Anatomy Atelier — Learn anatomy like an artist",
-    description: "Learn anatomy like an artist through immersive, medically detailed 3D specimens.",
+    title: "人体解剖学习工具｜Anatomy Atelier",
+    description: "通过可交互的 3D 标本探索人体器官的结构、位置与功能。",
     images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Anatomy Atelier — Learn anatomy like an artist",
-    description: "Learn anatomy like an artist through immersive, medically detailed 3D specimens.",
+    title: "人体解剖学习工具｜Anatomy Atelier",
+    description: "通过可交互的 3D 标本探索人体器官的结构、位置与功能。",
     images: [OG_IMAGE],
   },
 };
@@ -67,16 +72,51 @@ export const viewport: Viewport = {
   themeColor: "#f7f0e7",
 };
 
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      name: "Anatomy Atelier",
+      alternateName: ["解剖学工作室", "anatomy.itea.fit"],
+      url: `${SITE_URL}/`,
+      description: "通过交互式 3D 模型学习人体器官结构、位置与功能。",
+      inLanguage: "zh-CN",
+    },
+    {
+      "@type": "WebApplication",
+      "@id": `${SITE_URL}/#application`,
+      name: "Anatomy Atelier",
+      url: `${SITE_URL}/`,
+      applicationCategory: "EducationalApplication",
+      operatingSystem: "Any",
+      browserRequirements: "Requires JavaScript and WebGL",
+      isAccessibleForFree: true,
+      inLanguage: "zh-CN",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+    },
+  ],
+};
+
+const structuredDataJson = JSON.stringify(structuredData).replace(/</g, "\\u003c");
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${sans.variable} ${serif.variable}`}
-      >
+    <html lang="zh-CN">
+      <body className={`${sans.variable} ${serif.variable}`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: structuredDataJson }}
+        />
         {children}
       </body>
     </html>

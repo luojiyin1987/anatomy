@@ -1,4 +1,4 @@
-/** Cloudflare Worker entry point for the vinext-starter template. */
+/** Cloudflare Worker entry point for Anatomy Atelier. */
 import handler from "vinext/server/app-router-entry";
 
 interface Env {
