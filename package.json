@@ -13,9 +13,9 @@
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
-    "deploy": "wrangler deploy",
+    "deploy": "npm run build && wrangler deploy",
     "deploy:static": "bash deploy-pages.sh",
-    "deploy:all": "npm run build && npm run deploy && npm run deploy:static"
+    "deploy:all": "npm run deploy && npm run deploy:static"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
