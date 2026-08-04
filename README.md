@@ -96,3 +96,13 @@ actions tied to the current ChatGPT user. Leave public content anonymous.
 
 - [vinext Documentation](https://github.com/cloudflare/vinext)
 - [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+
+
+# Anatomy Atelier
+
+An interactive visual atlas for exploring human anatomy and organ systems.
+
+**[Open Live Demo](https://anatomy.itea.fit/)**
+
+> Explore body systems, organs, structures, and anatomical terminology
+> through an interactive web experience.
