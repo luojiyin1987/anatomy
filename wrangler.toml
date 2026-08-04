@@ -1,0 +1,12 @@
+# Cloudflare Worker configuration
+name = "anatomy"
+main = "worker/index.ts"
+
+# Static assets are served via Cloudflare Pages (anatomy-static.pages.dev)
+# No R2 or Images binding needed
+
+# Uncomment and configure D1 if needed:
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "anatomy-d1"
+# database_id = "YOUR_DATABASE_ID"

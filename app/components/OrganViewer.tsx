@@ -112,13 +112,13 @@ export function OrganViewer({ organ, autoRotate, onAutoRotate, compare, onCompar
   };
 
   const tools = [
-    { id: "rotate", label: "Rotate", icon: RotateCcw },
-    { id: "zoom", label: "Zoom", icon: Search },
-    { id: "isolate", label: "Isolate", icon: CircleDashed },
-    { id: "section", label: "Cross-section", icon: ScanLine },
-    { id: "layers", label: "Layers", icon: Layers3 },
-    { id: "compare", label: "Compare", icon: Box },
-    { id: "reset", label: "Reset", icon: RotateCcw },
+    { id: "rotate", label: "旋转", icon: RotateCcw },
+    { id: "zoom", label: "缩放", icon: Search },
+    { id: "isolate", label: "隔离", icon: CircleDashed },
+    { id: "section", label: "截面", icon: ScanLine },
+    { id: "layers", label: "图层", icon: Layers3 },
+    { id: "compare", label: "对比", icon: Box },
+    { id: "reset", label: "重置", icon: RotateCcw },
   ];
 
   return (
@@ -142,15 +142,15 @@ export function OrganViewer({ organ, autoRotate, onAutoRotate, compare, onCompar
         ))}
       </div>
 
-      <aside className="tip-note" aria-label="Viewer instructions">
-        <span><Sparkles size={15} /> Tip</span>
-        <p>Drag to rotate<br />Scroll to zoom<br />Click a dot to learn more</p>
+      <aside className="tip-note" aria-label="查看器说明">
+        <span><Sparkles size={15} /> 提示</span>
+        <p>拖动旋转<br />滚轮缩放<br />点击圆点了解更多</p>
       </aside>
 
       {selected && (
         <div className="hotspot-callout" ref={calloutRef} data-side="right">
           <div className="callout-body" style={{ "--hotspot-color": selected.color } as React.CSSProperties}>
-            <button className="callout-close" type="button" onClick={() => viewerRef.current?.clearSelection()} aria-label="Close">
+            <button className="callout-close" type="button" onClick={() => viewerRef.current?.clearSelection()} aria-label="关闭">
               <X size={13} />
             </button>
             <b>{selected.label}</b>
@@ -169,18 +169,18 @@ export function OrganViewer({ organ, autoRotate, onAutoRotate, compare, onCompar
       {loading && slowLoad && (
         <div className="model-loader" role="status" aria-live="polite">
           <div className="loader-orbit"><Maximize2 size={20} /></div>
-          <strong>Preparing the {organ.name.toLowerCase()}</strong>
+          <strong>准备{organ.name.toLowerCase()}</strong>
           <span>{Math.max(8, Math.round(progress * 100))}%</span>
         </div>
       )}
 
       <button className="auto-rotate" type="button" onClick={() => onAutoRotate(!autoRotate)} aria-pressed={autoRotate}>
-        <RotateCcw size={14} /> Auto rotate
+        <RotateCcw size={14} /> 自动旋转
         <span className={`switch ${autoRotate ? "on" : ""}`}><i /></span>
       </button>
 
       <div className="view-caption">
-        <span>3D specimen · click a dot to explore</span>
+        <span>3D标本 · 点击圆点探索</span>
         <strong>{organ.scientificName}</strong>
       </div>
     </section>
