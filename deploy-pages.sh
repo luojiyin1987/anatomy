@@ -6,6 +6,9 @@ set -e
 
 echo "Deploying static assets to Cloudflare Pages..."
 
+# Create project if it doesn't exist, then deploy
+wrangler pages project create anatomy-static --production-branch=main 2>/dev/null || true
+
 # Deploy public directory to Pages
 wrangler pages deploy public/ \
   --project-name=anatomy-static \

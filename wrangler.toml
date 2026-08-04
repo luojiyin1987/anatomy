@@ -1,8 +1,6 @@
 # Cloudflare Worker configuration
 name = "anatomy"
 main = "worker/index.ts"
-compatibility_date = "2024-01-01"
-compatibility_flags = ["nodejs_compat"]
 
 # Static assets are served via Cloudflare Pages (anatomy-static.pages.dev)
 # No R2 or Images binding needed
